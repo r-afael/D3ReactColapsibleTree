@@ -1,14 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { Box, IconButton, Layer, FixedZIndex, CompositeZIndex } from 'gestalt';
+import NodeMetadataModal from './NodeMetadataModal'; // Import the separate modal component
 
-interface TreeNode {
+export interface TreeNode {
   name: string;
+  metadata?: string; // Metadata field
   children?: TreeNode[];
   id?: number | string;
   textWidth?: number;
 }
 
-interface CustomHierarchyPointNode extends d3.HierarchyPointNode<TreeNode> {
+export interface CustomHierarchyPointNode extends d3.HierarchyPointNode<TreeNode> {
   x0?: number;
   y0?: number;
   _children?: CustomHierarchyPointNode[];
@@ -16,237 +19,39 @@ interface CustomHierarchyPointNode extends d3.HierarchyPointNode<TreeNode> {
 }
 
 const rootNodes: TreeNode[] = [
-    {
-      name: 'Root 1',
-      children: [{ name: 'Child 1.1' }, { name: 'Child 1.2' }],
-    },
-    {
-      name: 'Root 2',
-      children: [
-        { name: 'Child 2.1' },
-        {
-          name: 'Child 2.2',
-          children: [{ name: 'Grandchild 2.2.1' }, { name: 'Grandchild 2.2.2' }],
-        },
-      ],
-    },
-    {
-      name: 'Root 3',
-      children: [
-        {
-          name: 'Child 3.1',
-          children: [
-            { name: 'Grandchild 3.1.1' },
-            {
-              name: 'Grandchild 3.1.2',
-              children: [{ name: 'Great-Grandchild 3.1.2.1' }],
-            },
-          ],
-        },
-        { name: 'Child 3.2' },
-      ],
-    },
-    {
-      name: 'Root 4',
-      children: [{ name: 'Child 4.1' }],
-    },
-    {
-      name: 'Root 5',
-      children: [
-        { name: 'Child 5.1' },
-        { name: 'Child 5.2' },
-        { name: 'Child 5.3' },
-      ],
-    },
-    {
-      name: 'Root 6',
-      children: [
-        {
-          name: 'Child 6.1',
-          children: [
-            { name: 'Grandchild 6.1.1' },
-            { name: 'Grandchild 6.1.2' },
-            { name: 'Grandchild 6.1.3' },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 7',
-      children: [
-        {
-          name: 'Child 7.1',
-          children: [
-            {
-              name: 'Grandchild 7.1.1',
-              children: [
-                { name: 'Great-Grandchild 7.1.1.1' },
-                { name: 'Great-Grandchild 7.1.1.2' },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 8',
-    },
-    {
-      name: 'Root 9',
-      children: [
-        { name: 'Child 9.1' },
-        { name: 'Child 9.2' },
-        { name: 'Child 9.3' },
-        { name: 'Child 9.4' },
-      ],
-    },
-    {
-      name: 'Root 10',
-      children: [
-        {
-          name: 'Child 10.1',
-          children: [
-            { name: 'Grandchild 10.1.1' },
-            { name: 'Grandchild 10.1.2' },
-          ],
-        },
-        {
-          name: 'Child 10.2',
-          children: [
-            { name: 'Grandchild 10.2.1' },
-            { name: 'Grandchild 10.2.2' },
-            { name: 'Grandchild 10.2.3' },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 11',
-      children: [{ name: 'Child 11.1' }],
-    },
-    {
-      name: 'Root 12',
-      children: [
-        { name: 'Child 12.1' },
-        {
-          name: 'Child 12.2',
-          children: [{ name: 'Grandchild 12.2.1' }],
-        },
-        {
-          name: 'Child 12.3',
-          children: [
-            {
-              name: 'Grandchild 12.3.1',
-              children: [
-                { name: 'Great-Grandchild 12.3.1.1' },
-                { name: 'Great-Grandchild 12.3.1.2' },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 13',
-      children: [
-        { name: 'Child 13.1' },
-        { name: 'Child 13.2' },
-      ],
-    },
-    {
-      name: 'Root 14',
-      children: [
-        {
-          name: 'Child 14.1',
-          children: [
-            { name: 'Grandchild 14.1.1' },
-            { name: 'Grandchild 14.1.2' },
-            { name: 'Grandchild 14.1.3' },
-            { name: 'Grandchild 14.1.4' },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 15',
-      children: [
-        { name: 'Child 15.1' },
-        { name: 'Child 15.2' },
-        { name: 'Child 15.3' },
-        { name: 'Child 15.4' },
-        { name: 'Child 15.5' },
-      ],
-    },
-    {
-      name: 'Root 16',
-      children: [
-        {
-          name: 'Child 16.1',
-          children: [
-            {
-              name: 'Grandchild 16.1.1',
-              children: [
-                {
-                  name: 'Great-Grandchild 16.1.1.1',
-                  children: [{ name: 'Great-Great-Grandchild 16.1.1.1.1' }],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 17',
-      children: [{ name: 'Child 17.1' }],
-    },
-    {
-      name: 'Root 18',
-      children: [
-        { name: 'Child 18.1' },
-        {
-          name: 'Child 18.2',
-          children: [
-            { name: 'Grandchild 18.2.1' },
-            { name: 'Grandchild 18.2.2' },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Root 19',
-      children: [
-        { name: 'Child 19.1' },
-        { name: 'Child 19.2' },
-        { name: 'Child 19.3' },
-      ],
-    },
-    {
-      name: 'Root 20',
-      children: [
-        {
-          name: 'Child 20.1',
-          children: [
-            {
-              name: 'Grandchild 20.1.1',
-              children: [
-                { name: 'Great-Grandchild 20.1.1.1' },
-                {
-                  name: 'Great-Grandchild 20.1.1.2',
-                  children: [
-                    { name: 'Great-Great-Grandchild 20.1.1.2.1' },
-                    { name: 'Great-Great-Grandchild 20.1.1.2.2' },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        { name: 'Child 20.2' },
-      ],
-    },
-  ];
-  
+  {
+    name: 'Root 1',
+    metadata: 'Metadata for Root 1',
+    children: [
+      { name: 'Child 1.1', metadata: 'Metadata for Child 1.1' },
+      { name: 'Child 1.2', metadata: 'Metadata for Child 1.2' },
+    ],
+  },
+  {
+    name: 'Root 2',
+    metadata: 'Metadata for Root 2',
+    children: [
+      { name: 'Child 2.1', metadata: 'Metadata for Child 2.1' },
+      { name: 'Child 2.2', metadata: 'Metadata for Child 2.2' },
+    ],
+  },
+  {
+    name: 'Root 3',
+    metadata: 'Metadata for Root 3',
+    children: [
+      {
+        name: 'Child 3.1',
+        metadata: 'Metadata for Child 3.1',
+        children: [
+          { name: 'Child 3.1.1', metadata: 'Metadata for Child 3.1.1' },
+          { name: 'Child 3.1.2', metadata: 'Metadata for Child 3.1.2' },
+        ],
+      },
+      { name: 'Child 3.2', metadata: 'Metadata for Child 3.2' },
+    ],
+  },
+  // Add more root nodes as needed
+];
 
 const virtualRootNode: TreeNode = {
   name: 'virtual_root',
@@ -255,12 +60,23 @@ const virtualRootNode: TreeNode = {
 
 const D3TreeComponent: React.FC = () => {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // State for the selected node
+  const [selectedNode, setSelectedNode] = useState<CustomHierarchyPointNode | null>(null);
+
+  // Store the zoom behavior and initial transform to reset later
+  const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const initialTransformRef = useRef<d3.ZoomTransform | null>(null);
 
   useEffect(() => {
-    const initialWidth = 800;
-    const initialHeight = 600;
+    if (!svgRef.current || !containerRef.current) return; // Ensure refs are not null
 
-    const margin = { top: 20, right: 120, bottom: 40, left: 120 };
+    // Get container dimensions
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = containerRef.current.clientHeight;
+
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
     const dx = 100; // Vertical spacing between nodes
     const dy = 100; // Horizontal spacing between nodes
@@ -275,7 +91,7 @@ const D3TreeComponent: React.FC = () => {
 
     // Create the root node
     const root = d3.hierarchy<TreeNode>(virtualRootNode) as CustomHierarchyPointNode;
-    root.x0 = initialWidth / 2;
+    root.x0 = containerWidth / 2;
     root.y0 = 0;
 
     // Collapse all children except root nodes
@@ -294,22 +110,42 @@ const D3TreeComponent: React.FC = () => {
     // Clear previous SVG content if exists
     d3.select(svgRef.current).selectAll('*').remove();
 
-    // Create the SVG container
+    // Create the SVG container with responsive dimensions
     const svg = d3
-      .select(svgRef.current)
-      .attr('width', initialWidth)
-      .attr('height', initialHeight)
+      .select(svgRef.current as SVGSVGElement)
+      .attr('width', '100%')
+      .attr('height', '100%')
       .style('font', '12px sans-serif')
       .style('user-select', 'none');
 
-    const gLink = svg
+    // Create a container group that will hold all other groups
+    const containerGroup = svg.append('g');
+
+    // Define zoom behavior
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.1, 4]) // Adjust the scale extent as needed
+      .on('zoom', zoomed);
+
+    // Store the zoom behavior for later use
+    zoomBehaviorRef.current = zoom;
+
+    function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
+      containerGroup.attr('transform', event.transform.toString());
+    }
+
+    // Apply zoom behavior to SVG
+    svg.call(zoom).on('dblclick.zoom', null); // Disable double-click zoom if desired
+
+    // Now, append gLink and gNode to containerGroup
+    const gLink = containerGroup
       .append('g')
       .attr('fill', 'none')
       .attr('stroke', '#555')
       .attr('stroke-opacity', 0.4)
       .attr('stroke-width', 1.5);
 
-    const gNode = svg
+    const gNode = containerGroup
       .append('g')
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all');
@@ -324,34 +160,42 @@ const D3TreeComponent: React.FC = () => {
       const nodes = root.descendants().slice(1) as CustomHierarchyPointNode[];
       const links = root.links().filter((d) => d.source.depth > 0 && d.target.depth > 0);
 
-      // Adjust vertical positions to move the tree upwards
-      let minY = d3.min(nodes, (d) => d.y) || 0;
-      nodes.forEach((d) => {
-        d.y = d.y - minY + margin.top;
-      });
-      root.y = root.y - minY + margin.top;
-      source.y0 = source.y0 ? source.y0 - minY + margin.top : margin.top;
+      // Adjust positions
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
 
-      // Adjust horizontal positions to move the tree to the right
-      let minX = d3.min(nodes, (d) => d.x) || 0;
+      nodes.forEach((d) => {
+        if (d.x < minX) minX = d.x;
+        if (d.x > maxX) maxX = d.x;
+        if (d.y < minY) minY = d.y;
+        if (d.y > maxY) maxY = d.y;
+      });
+
+      // Compute the tree's dimensions
+      const treeWidth = maxX - minX + margin.left + margin.right;
+      const treeHeight = maxY - minY + margin.top + margin.bottom;
+
+      // Center the nodes
       nodes.forEach((d) => {
         d.x = d.x - minX + margin.left;
+        d.y = d.y - minY + margin.top;
       });
-      root.x = root.x - minX + margin.left;
-      source.x0 = source.x0 ? source.x0 - minX + margin.left : margin.left;
 
-      // Compute the maximum x and y positions to determine the required SVG dimensions
-      let maxX = d3.max(nodes, (d) => d.x) || 0;
-      let maxY = d3.max(nodes, (d) => d.y) || 0;
+      // Update the initial transform to center the tree
+      const scaleX = containerWidth / treeWidth;
+      const scaleY = containerHeight / treeHeight;
+      const scale = Math.min(scaleX, scaleY);
 
-      // Update the SVG dimensions and viewBox
-      const svgWidth = maxX + margin.right;
-      const svgHeight = maxY + margin.bottom;
+      const translateX = (containerWidth - treeWidth * scale) / 2;
+      const translateY = (containerHeight - treeHeight * scale) / 2;
 
-      svg
-        .attr('width', svgWidth)
-        .attr('height', svgHeight)
-        .attr('viewBox', [0, 0, svgWidth, svgHeight] as any);
+      if (source === root) {
+        const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+        initialTransformRef.current = initialTransform; // Store it for resetting
+        svg.call(zoom.transform, initialTransform);
+      }
 
       // Create a standalone transition
       const transition = d3.transition().duration(duration);
@@ -366,34 +210,62 @@ const D3TreeComponent: React.FC = () => {
         .append('g')
         .attr('transform', () => `translate(${source.x0 || 0},${source.y0 || 0})`)
         .attr('fill-opacity', 0)
-        .attr('stroke-opacity', 0)
-        .on('click', (event: any, d: CustomHierarchyPointNode) => {
-          d.children = d.children ? undefined : d._children;
-          update(d);
-        });
+        .attr('stroke-opacity', 0);
 
-      // Add rectangle
+      // Rectangle for the node
       nodeEnter
         .append('rect')
         .attr('x', -50)
         .attr('y', -10)
         .attr('width', 100)
         .attr('height', 20)
-        .attr('fill', (d) => (d._children ? '#555' : '#999'))
+        .attr('fill', (d) =>
+          d._children || d.children ? '#555' : '#999'
+        ) // Different color for expandable nodes
         .attr('stroke-width', 1)
         .attr('stroke', '#000')
         .attr('rx', 5)
-        .attr('ry', 5);
+        .attr('ry', 5)
+        .on('click', function (event: any, d: CustomHierarchyPointNode) {
+          event.stopPropagation();
+          d.children = d.children ? undefined : d._children;
+          update(d);
+        });
 
+      // Text inside the node
       nodeEnter
         .append('text')
         .attr('dy', '0.31em')
         .attr('text-anchor', 'middle')
         .text((d) => d.data.name)
-        .attr('fill', 'white');
+        .attr('fill', 'white')
+        .on('click', function (event: any, d: CustomHierarchyPointNode) {
+          event.stopPropagation();
+          d.children = d.children ? undefined : d._children;
+          update(d);
+        });
 
+      // Metadata icon inside the node
+      // Replace FontAwesome with an SVG path icon
+      const infoIconPath =
+        'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 ' +
+        '10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s' +
+        '3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v2h2V7zm0 ' +
+        '4h-2v6h2v-6z';
+
+      nodeEnter
+        .append('path')
+        .attr('d', infoIconPath)
+        .attr('transform', 'translate(35, -10) scale(0.5)')
+        .attr('fill', 'white')
+        .on('click', function (event: any, d: CustomHierarchyPointNode) {
+          event.stopPropagation();
+          setSelectedNode(d); // Open the popup with node metadata
+        });
+
+      // Update positions and transitions
       const nodeUpdate = node
-        .merge(nodeEnter)
+        .merge(nodeEnter as any)
         .transition(transition)
         .attr('transform', (d) => `translate(${d.x},${d.y})`)
         .attr('fill-opacity', 1)
@@ -421,7 +293,7 @@ const D3TreeComponent: React.FC = () => {
         });
 
       link
-        .merge(linkEnter)
+        .merge(linkEnter as any)
         .transition(transition)
         .attr('d', (d) => diagonal(d as any));
 
@@ -448,7 +320,49 @@ const D3TreeComponent: React.FC = () => {
     update(root);
   }, []);
 
-  return <svg ref={svgRef} />;
+  // Function to reset the zoom and pan
+  const resetZoom = () => {
+    if (
+      !svgRef.current ||
+      !zoomBehaviorRef.current ||
+      !containerRef.current ||
+      !initialTransformRef.current
+    )
+      return;
+
+    const svgSelection = d3.select(svgRef.current as SVGSVGElement);
+
+    // Reset the zoom transform to the initial transform
+    svgSelection
+      .transition()
+      .duration(750)
+      .call((transition) => {
+        zoomBehaviorRef.current!.transform(transition, initialTransformRef.current!);
+      });
+  };
+
+  // ZIndex for the floating button
+  const fixedZIndex = new FixedZIndex(1);
+  const compositeZIndex = new CompositeZIndex([fixedZIndex]);
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <svg ref={svgRef} style={{ width: '100%', height: '100%' }} />
+      {selectedNode && (
+        <NodeMetadataModal node={selectedNode} onClose={() => setSelectedNode(null)} />
+      )}
+      <Layer zIndex={compositeZIndex}>
+        <Box position="absolute" top right marginTop={2}>
+          <IconButton
+            accessibilityLabel="Reset Zoom"
+            icon="refresh"
+            onClick={resetZoom}
+            size="md"
+          />
+        </Box>
+      </Layer>
+    </div>
+  );
 };
 
 export default D3TreeComponent;

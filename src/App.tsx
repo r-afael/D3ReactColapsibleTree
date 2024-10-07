@@ -11,15 +11,15 @@ const App: React.FC = () => {
         {isExpanded ? 'Collapse Tree Visualization' : 'Expand Tree Visualization'}
       </button>
       {isExpanded && (
-        <div style={{ padding: '10px', border: '1px solid black' }}>
-          <Box maxHeight={500}>
-            <Flex>
-
-        
-          <D3TreeComponent />
+        <Box
+          maxHeight={500}         // Constrain the height
+          height={500}            // Explicitly set the height to 500px
+          borderStyle="lg"        // Set the border style (options: sm, lg, shadow)          // Optional: Set background color to ensure visibility
+        >
+          <Flex height="100%">    {/* Ensure Flex takes full height */}
+            <D3TreeComponent />
           </Flex>
-          </Box>
-        </div>
+        </Box>
       )}
     </div>
   );
