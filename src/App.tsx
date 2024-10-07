@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import D3TreeComponent from './D3TreeComponent';
+import { Box, Flex } from 'gestalt';
 
-function App() {
+const App: React.FC = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <button onClick={() => setIsExpanded(!isExpanded)}>
+        {isExpanded ? 'Collapse Tree Visualization' : 'Expand Tree Visualization'}
+      </button>
+      {isExpanded && (
+        <div style={{ padding: '10px', border: '1px solid black' }}>
+          <Box maxHeight={500}>
+            <Flex>
+
+        
+          <D3TreeComponent />
+          </Flex>
+          </Box>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default App;
